@@ -300,4 +300,4 @@
 298,247,2
 299,132,2
 
-Solution Time: 3.8394 seconds
+Solution Time: 2.4177 seconds

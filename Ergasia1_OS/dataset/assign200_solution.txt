@@ -200,4 +200,4 @@
 198,42,2
 199,72,3
 
-Solution Time: 1.1040 seconds
+Solution Time: 1.0451 seconds

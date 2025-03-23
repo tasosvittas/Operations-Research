@@ -10,11 +10,12 @@ def read_assignment_file(filename):
     n = int(lines[0].strip())  # Πρώτη γραμμή: πλήθος εργασιών/εργαζομένων
     cost_matrix = []
 
+
     all_costs = [int(num) for line in lines[1:] for num in line.split()]
     
     for i in range(n):
         cost_matrix.append(all_costs[i * n:(i + 1) * n])  # Δημιουργία μήτρας κόστους
-
+    print(np.array(cost_matrix))
     return np.array(cost_matrix)
 
 def solve_assignment_problem(cost_matrix):

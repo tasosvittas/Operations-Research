@@ -400,4 +400,4 @@
 398,296,2
 399,9,2
 
-Solution Time: 7.0708 seconds
+Solution Time: 5.3855 seconds

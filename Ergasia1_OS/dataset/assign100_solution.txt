@@ -100,4 +100,4 @@
 98,67,4
 99,99,4
 
-Solution Time: 0.2758 seconds
+Solution Time: 0.2222 seconds

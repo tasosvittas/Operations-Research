@@ -500,4 +500,4 @@
 498,359,2
 499,330,2
 
-Solution Time: 10.1360 seconds
+Solution Time: 8.9498 seconds

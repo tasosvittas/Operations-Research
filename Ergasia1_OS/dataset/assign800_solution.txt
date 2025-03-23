@@ -800,4 +800,4 @@
 798,51,2
 799,384,2
 
-Solution Time: 28.1424 seconds
+Solution Time: 28.0979 seconds

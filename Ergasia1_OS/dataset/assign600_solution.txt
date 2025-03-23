@@ -600,4 +600,4 @@
 598,267,2
 599,7,2
 
-Solution Time: 18.9216 seconds
+Solution Time: 13.9472 seconds
