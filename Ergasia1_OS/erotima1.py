@@ -9,6 +9,7 @@ def read_cost_matrix(file_path):
         for line in lines[1:]:
             costs.extend(map(int, line.strip().split()))
         cost_matrix = [costs[i*num_tasks:(i+1)*num_tasks] for i in range(num_tasks)]
+        print(cost_matrix)
         return cost_matrix
 
 def solve_assignment_problem(cost_matrix):

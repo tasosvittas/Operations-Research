@@ -7,7 +7,6 @@ def read_file(filename):
         lines = file.readlines()
     n = int(lines[0].strip())
     matrix = []
-
     all_costs = []
     for line in lines[1:]:
         numbers = line.split()          # Χωρίζει τη γραμμή σε ξεχωριστούς αριθμούς (ως strings)
@@ -16,11 +15,8 @@ def read_file(filename):
         print(all_costs)
     for i in range(n):
         matrix.append(all_costs[i * n:(i + 1) * n])
-    print(np.array(matrix))
     return np.array(matrix)
     
-
-
 
 def main():
     filename = "dataset/assign100.txt"
