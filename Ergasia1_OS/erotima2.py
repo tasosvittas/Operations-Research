@@ -1,57 +1,76 @@
 import time
-import numpy as np
+import networkx as nx
 import matplotlib.pyplot as plt
-from scipy.optimize import linear_sum_assignment
 from erotima1 import read_file, assignment_problem_solver
 
+def hungarian_algorithm(cost_matrix):
+    n = len(cost_matrix)
+    G = nx.Graph()
+    left = range(n)
+    right = range(n, 2*n)
+
+    for i in left:
+        for j in right:
+            G.add_edge(i, j, weight=cost_matrix[i][j - n])
+
+    start = time.time()
+    matching = nx.algorithms.bipartite.minimum_weight_full_matching(G, top_nodes=left, weight='weight')
+    end = time.time()
+
+    total_cost = 0
+    for i in left:
+        j = matching[i]
+        cost = cost_matrix[i][j - n]
+        total_cost += cost
+
+    return total_cost, end - start
+
+
 def run_comparison(files):
-    sizes, costs_lp, times_lp, costs_hungarian, times_hungarian = [], [], [], [], []
+    sizes, costs_lp, times_lp, costs_nx, times_nx = [], [], [], [], []
 
     for file in files:
         print(f"Processing {file}")
-        jobs_matrix = read_file(file)
-        size = jobs_matrix.shape[0]
-        sizes.append(size)
+        matrix = read_file(file)
+        n = len(matrix)
+        sizes.append(n)
 
-        # Μέθοδος 1: Μαθηματική Μοντελοποίηση
-        cost_lp, _, time_lp = assignment_problem_solver(jobs_matrix)
+        # ortools
+        cost_lp, _, time_lp = assignment_problem_solver(matrix)
         costs_lp.append(cost_lp)
         times_lp.append(time_lp)
 
-        # Μέθοδος 2: Ουγγρικός Αλγόριθμος
-        start = time.time()
-        row_ind, col_ind = linear_sum_assignment(jobs_matrix)
-        end = time.time()
-        cost_hungarian = jobs_matrix[row_ind, col_ind].sum()
-        time_hungarian = end - start
-        costs_hungarian.append(cost_hungarian)
-        times_hungarian.append(time_hungarian)
+        # hungarian algo
+        cost_nx, time_nx = hungarian_algorithm(matrix)
+        costs_nx.append(cost_nx)
+        times_nx.append(time_nx)
 
-    return sizes, costs_lp, times_lp, costs_hungarian, times_hungarian
+        print(f"For {file}: ortools time = {time_lp:.2f} sec, hungarian algo time = {time_nx:.2f} sec")
+    return sizes, costs_lp, times_lp, costs_nx, times_nx
 
 
-def plot_comparisons(sizes, costs_lp, times_lp, costs_hungarian, times_hungarian):
-    # Κόστος σύγκριση
+def plot_comparisons(sizes, costs_lp, times_lp, costs_nx, times_nx):
+    # Κόστος
     plt.figure()
-    plt.plot(sizes, costs_lp, label='LP Solver', marker='o')
-    plt.plot(sizes, costs_hungarian, label='Hungarian Algorithm', marker='x')
-    plt.xlabel('Size (n)')
-    plt.ylabel('Total Cost')
-    plt.title('Σύγκριση Κόστους Λύσης')
+    plt.plot(sizes, costs_lp, label='OR-Tools', marker='o')
+    plt.plot(sizes, costs_nx, label='Hungarian Algorithm', marker='x')
+    plt.xlabel('Μέγεθος Προβλήματος (n)')
+    plt.ylabel('Κόστος Λύσης')
+    plt.title('Σύγκριση Κόστους')
     plt.legend()
     plt.grid(True)
-    plt.savefig("cost_comparison.png")
+    plt.savefig("comparison_img/cost_comparison.png")
 
-    # Χρόνος σύγκριση
+    # Χρόνος
     plt.figure()
-    plt.plot(sizes, times_lp, label='LP Solver', marker='o')
-    plt.plot(sizes, times_hungarian, label='Hungarian Algorithm', marker='x')
-    plt.xlabel('Size (n)')
-    plt.ylabel('Time (seconds)')
+    plt.plot(sizes, times_lp, label='OR-Tools', marker='o')
+    plt.plot(sizes, times_nx, label='Hungarian Algorithm', marker='x')
+    plt.xlabel('Μέγεθος Προβλήματος (n)')
+    plt.ylabel('Χρόνος (sec)')
     plt.title('Σύγκριση Χρόνου Επίλυσης')
     plt.legend()
     plt.grid(True)
-    plt.savefig("time_comparison.png")
+    plt.savefig("comparison_img/time_comparison.png")
 
     plt.show()
 
@@ -62,8 +81,10 @@ def main():
         "dataset/assign400.txt", "dataset/assign500.txt", "dataset/assign600.txt",
         "dataset/assign700.txt", "dataset/assign800.txt"
     ]
-    sizes, costs_lp, times_lp, costs_hungarian, times_hungarian = run_comparison(files)
-    plot_comparisons(sizes, costs_lp, times_lp, costs_hungarian, times_hungarian)
+
+    sizes, costs_lp, times_lp, costs_nx, times_nx = run_comparison(files)
+    plot_comparisons(sizes, costs_lp, times_lp, costs_nx, times_nx)
+
 
 if __name__ == "__main__":
     main()

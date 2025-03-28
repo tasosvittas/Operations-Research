@@ -1,3 +1,4 @@
+import os
 import time
 import numpy as np
 from ortools.linear_solver import pywraplp
@@ -55,9 +56,10 @@ def main():
     ]
 
     for file in files:
+        filename = os.path.basename(file)
         jobs_matrix = read_file(file)
         total_cost, assignments, solve_time = assignment_with_group_constraint(jobs_matrix)
-        solution_file = file.replace(".txt", "_group_solution.txt")
+        solution_file = os.path.join("solutions", filename.replace(".txt", "_erotima3_solution.txt"))
         write_solution(solution_file, total_cost, assignments)
         print(f"[Group Constraint] Solved {file}: Total Cost = {total_cost}, Time = {solve_time:.2f} sec")
 

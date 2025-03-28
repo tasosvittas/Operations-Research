@@ -1,3 +1,4 @@
+import os
 import time
 import numpy as np
 from ortools.linear_solver import pywraplp
@@ -65,16 +66,18 @@ def write_solution(file_path, total_cost, assignments):
 
 def main():
     files = [
-        "dataset/assign5.txt",
         "dataset/assign100.txt", "dataset/assign200.txt", "dataset/assign300.txt",
         "dataset/assign400.txt", "dataset/assign500.txt", "dataset/assign600.txt",
         "dataset/assign700.txt", "dataset/assign800.txt"
     ]
 
+    output_dir = "solutions/erotima1"
     for file in files:
+        filename = os.path.basename(file)
         jobs_matrix = read_file(file)
         total_cost, assignments, solve_time = assignment_problem_solver(jobs_matrix)
-        solution_file = file.replace(".txt", "_solution.txt")
+        # solution_file = file.replace(".txt", "_solution.txt")
+        solution_file = os.path.join("solutions", filename.replace(".txt", "_erotima1_solution.txt"))
         write_solution(solution_file, total_cost, assignments)
         print(f"Solved {file}: Total Cost = {total_cost}, Time = {solve_time:.2f} seconds")
 
