@@ -1,3 +1,10 @@
+''' 
+Μπορω εκτός απο την nx.minimum_weight_full_matching να χρησιμοποιήσω και άλλες βιβλιοθηκες επίλυσης του Ουγκρικου Αλγοριθμου, 
+όπως https://pypi.org/project/munkres/ 
+https://pypi.org/project/hungarian-algorithm/
+
+'''
+
 import time
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -6,13 +13,16 @@ from erotima1 import read_file, assignment_problem_solver
 def hungarian_algorithm(cost_matrix):
     n = len(cost_matrix)
     G = nx.Graph()
+    #left = job
     left = range(n)
+    #right = worker
     right = range(n, 2*n)
+    print(left,right)
 
     for i in left:
         for j in right:
+            print(i, j, cost_matrix[i][j - n])
             G.add_edge(i, j, weight=cost_matrix[i][j - n])
-
     start = time.time()
     matching = nx.algorithms.bipartite.minimum_weight_full_matching(G, top_nodes=left, weight='weight')
     end = time.time()
@@ -22,7 +32,6 @@ def hungarian_algorithm(cost_matrix):
         j = matching[i]
         cost = cost_matrix[i][j - n]
         total_cost += cost
-
     return total_cost, end - start
 
 
@@ -40,7 +49,7 @@ def run_comparison(files):
         costs_lp.append(cost_lp)
         times_lp.append(time_lp)
 
-        # hungarian algo
+        # hungarian
         cost_nx, time_nx = hungarian_algorithm(matrix)
         costs_nx.append(cost_nx)
         times_nx.append(time_nx)
@@ -50,7 +59,7 @@ def run_comparison(files):
 
 
 def plot_comparisons(sizes, costs_lp, times_lp, costs_nx, times_nx):
-    # Κόστος
+    # Cost
     plt.figure()
     plt.plot(sizes, costs_lp, label='OR-Tools', marker='o')
     plt.plot(sizes, costs_nx, label='Hungarian Algorithm', marker='x')
@@ -61,7 +70,7 @@ def plot_comparisons(sizes, costs_lp, times_lp, costs_nx, times_nx):
     plt.grid(True)
     plt.savefig("comparison_img/cost_comparison.png")
 
-    # Χρόνος
+    # Time
     plt.figure()
     plt.plot(sizes, times_lp, label='OR-Tools', marker='o')
     plt.plot(sizes, times_nx, label='Hungarian Algorithm', marker='x')

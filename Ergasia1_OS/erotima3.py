@@ -54,12 +54,12 @@ def main():
         "dataset/assign400.txt", "dataset/assign500.txt", "dataset/assign600.txt",
         "dataset/assign700.txt", "dataset/assign800.txt"
     ]
-
+    output_dir = "solutions/erotima3"
     for file in files:
         filename = os.path.basename(file)
         jobs_matrix = read_file(file)
         total_cost, assignments, solve_time = assignment_with_group_constraint(jobs_matrix)
-        solution_file = os.path.join("solutions", filename.replace(".txt", "_erotima3_solution.txt"))
+        solution_file = os.path.join(output_dir, filename.replace(".txt", "_erotima3_solution.txt"))
         write_solution(solution_file, total_cost, assignments)
         print(f"[Group Constraint] Solved {file}: Total Cost = {total_cost}, Time = {solve_time:.2f} sec")
 

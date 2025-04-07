@@ -1,89 +1,72 @@
-import os
 import time
-import numpy as np
-from ortools.linear_solver import pywraplp
+import networkx as nx
+import matplotlib.pyplot as plt
+from erotima1 import read_file
+def hungarian_algorithm(cost_matrix):
+    n = len(cost_matrix)
+    G = nx.Graph()
 
-def read_file(filename):
-    with open(filename, 'r') as file:
-        lines = file.readlines()
-    n = int(lines[0].strip())
-    matrix = []
-    all_costs = []
-    for line in lines[1:]:
-        numbers = line.split()          # Χωρίζει τη γραμμή σε ξεχωριστούς αριθμούς strings
-        for num in numbers:
-            all_costs.append(int(num))  # Μετατρέπει κάθε αριθμό σε int και τον προσθέτει στη λίστα
-    for i in range(n):
-        matrix.append(all_costs[i * n:(i + 1) * n])
-    return np.array(matrix)    
+    # 'left' are the job nodes (0..n-1)
+    left = range(n)
+    # 'right' are the worker nodes (n..2n-1)
+    right = range(n, 2*n)
 
-def assignment_problem_solver(jobs_matrix):
-    jobs = len(jobs_matrix)
-    workers = len(jobs_matrix) #[0]
+    print("Left partition (Jobs):", list(left))
+    print("Right partition (Workers):", list(right))
+
+    # Build the bipartite graph
+    for i in left:
+        for j in right:
+            G.add_edge(i, j, weight=cost_matrix[i][j - n])
     
-    solver = pywraplp.Solver.CreateSolver("SCIP")
-    if not solver:
-        return
+    # -- (Optional) Draw the bipartite graph to visualize it --
+
+    # Build a position dict to place the two partitions side by side
+    pos = {}
+    # Put left nodes (jobs) at x=0, spaced by their index
+    for index, node in enumerate(left):
+        pos[node] = (0, index)
+    # Put right nodes (workers) at x=1, spaced by their index
+    for index, node in enumerate(right):
+        pos[node] = (1, index - n)
+
+    # Draw the graph with node labels
+    plt.figure()
+    nx.draw(G, pos, with_labels=True)
     
-    x = {}
-    for i in range(jobs):
-        for j in range(workers):
-            x[i, j] = solver.IntVar(0, 1, "")
+    # Draw edge labels showing weights (the cost)
+    edge_labels = nx.get_edge_attributes(G, 'weight')
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
 
-    for i in range(jobs):
-        solver.Add(solver.Sum([x[i, j] for j in range(workers)]) <= 1)
-    for j in range(workers):
-        solver.Add(solver.Sum([x[i, j] for i in range(jobs)]) == 1)
+    # Show the graph in a pop-up window (or you can savefig instead)
+    plt.title("Bipartite Graph Representation of Cost Matrix")
+    plt.show()
+    # -------------------------------------------------------------
 
-    objective_terms = []
-    for i in range(jobs):
-        for j in range(workers):
-            objective_terms.append(jobs_matrix[i][j] * x[i, j])
-    solver.Minimize(solver.Sum(objective_terms))
+    # Now run the Hungarian (minimum weight full matching) algorithm
+    start = time.time()
+    matching = nx.algorithms.bipartite.minimum_weight_full_matching(
+        G, top_nodes=left, weight='weight'
+    )
+    end = time.time()
 
-    start_time = time.time()
-    status = solver.Solve()
-    end_time = time.time()
+    # Compute the total cost from the matching
+    total_cost = 0
+    for i in left:
+        j = matching[i]
+        cost = cost_matrix[i][j - n]
+        total_cost += cost
+    print("Hungarian total cost:", total_cost)
 
-    if status == pywraplp.Solver.OPTIMAL or status == pywraplp.Solver.FEASIBLE:
-        total_cost = solver.Objective().Value()
-        assignments = [None] * workers  
-        for i in range(jobs):
-            for j in range(workers):
-                if x[i, j].solution_value() > 0.5:
-                    assignments[j] = (j, i, jobs_matrix[i][j])
-        print(assignments)
-        return total_cost, assignments, end_time - start_time
-    else:
-        return None, None, end_time - start_time
+    return total_cost, end - start
 
-def write_solution(file_path, total_cost, assignments):
-    with open(file_path, 'w') as file:
-        file.write(f"{int(total_cost)}\n")
-        for assignment in assignments:
-            file.write(f"{assignment[0]},{assignment[1]},{assignment[2]}\n")
-
-def main():
-    files = [
-        "dataset/assign5.txt",
-        "dataset/assign100.txt", "dataset/assign200.txt", "dataset/assign300.txt",
-        "dataset/assign400.txt", "dataset/assign500.txt", "dataset/assign600.txt",
-        "dataset/assign700.txt", "dataset/assign800.txt"
-    ]
-
-    output_dir = "solutions/erotima1"
-    os.makedirs(output_dir, exist_ok=True)
-
-    for file in files:
-        filename = os.path.basename(file)
-        jobs_matrix = read_file(file)
-        total_cost, assignments, solve_time = assignment_problem_solver(jobs_matrix)
-        solution_file = os.path.join(output_dir, filename.replace(".txt", "_erotima1_solution.txt"))
-        write_solution(solution_file, total_cost, assignments)
-        print(f"Solved {file}: Total Cost = {total_cost}, Time = {solve_time:.2f} seconds")
-
+# Example of how you might call this:
 if __name__ == "__main__":
-    main()
-
-
-    
+    # A sample 4x4 cost matrix (row=Job, col=Worker)
+    files = [
+        "dataset/assign4.txt"
+    ]
+    output_dir = "solutions/erotima1"
+    for file in files:
+        cost_matrix = read_file(file)
+        hungarian_algorithm(cost_matrix)
