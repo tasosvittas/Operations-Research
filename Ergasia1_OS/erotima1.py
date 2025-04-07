@@ -65,7 +65,7 @@ def write_solution(file_path, total_cost, assignments):
             file.write(f"{assignment[0]},{assignment[1]},{assignment[2]}\n")
 
 def main():
-    files = [
+    files = ["dataset/assign5.txt",
         "dataset/assign100.txt", "dataset/assign200.txt", "dataset/assign300.txt",
         "dataset/assign400.txt", "dataset/assign500.txt", "dataset/assign600.txt",
         "dataset/assign700.txt", "dataset/assign800.txt"
