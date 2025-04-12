@@ -27,7 +27,7 @@ def solve_assignment(cost_matrix):
 
 def main():
     files = [
-        "dataset/assign5.txt", "dataset/assign100.txt", "dataset/assign200.txt",
+        "dataset/assign4.txt", "dataset/assign100.txt", "dataset/assign200.txt",
         "dataset/assign300.txt", "dataset/assign400.txt", "dataset/assign500.txt",
         "dataset/assign600.txt", "dataset/assign700.txt", "dataset/assign800.txt"
     ]

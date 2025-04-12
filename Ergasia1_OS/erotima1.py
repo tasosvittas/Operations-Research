@@ -18,44 +18,44 @@ def read_file(filename):
     return np.array(matrix)
 
 def assignment_problem_solver(jobs_matrix):
-    workers = len(jobs_matrix[0])
-    jobs = len(jobs_matrix)
-
-    solver = pywraplp.Solver.CreateSolver("SCIP")
+    workers = len(jobs_matrix)
+    jobs = len(jobs_matrix[0])
+    
+    solver =  pywraplp.Solver.CreateSolver("SCIP")
     if not solver:
         return
     
-    x={}
-    for i in range(jobs):
-        for j in range(workers):
-            x[i,j] = solver.IntVar(0, 1, "")
+    x = {}
+    for i in range(workers):
+        for j in range(jobs):
+            x[i, j] = solver.IntVar(0, 1, "")
 
-    for i in range(jobs):
-        solver.Add(solver.Sum([x[i, j] for j in range(workers)]) <= 1)
+    for i in range(workers):
+        solver.Add(solver.Sum([x[i, j] for j in range(jobs)]) <= 1)
+    for j in range(jobs):
+        solver.Add(solver.Sum([x[i, j] for i in range(workers)]) == 1)
 
-    for j in range(workers):
-        solver.Add(solver.Sum([x[i, j] for i in range(jobs)]) == 1)
 
-    assigments = []
-    for i in range(jobs):
-        for j in range(workers):
-            assigments.append(jobs_matrix[i][j] * x[i, j])
-    solver.Minimize(solver.Sum(assigments))
+    objective_terms = []
+    for i in range(workers):
+        for j in range(jobs):
+            objective_terms.append(jobs_matrix[i][j] * x[i, j])
+    solver.Minimize(solver.Sum(objective_terms))
 
     start_time = time.time()
     status = solver.Solve()
-    finish_time = time.time()
+    end_time = time.time()
 
     if status == pywraplp.Solver.OPTIMAL or status == pywraplp.Solver.FEASIBLE:
         total_cost = solver.Objective().Value()
         assignments = []
-        for i in range(jobs):
-            for j in range(workers):
+        for i in range(workers):
+            for j in range(jobs):
                 if x[i,j].solution_value() > 0.5:
                     assignments.append((i, j, jobs_matrix[i][j]))
-        return total_cost, assignments, finish_time-start_time
+        return total_cost, assignments, end_time-start_time
     else:
-        return None, None, finish_time - start_time    
+        return None, None, end_time - start_time
 
 
 def write_solution(file_path, total_cost, assignments):
@@ -66,6 +66,7 @@ def write_solution(file_path, total_cost, assignments):
 
 def main():
     files = [
+        "dataset/assign4.txt",
         "dataset/assign100.txt", "dataset/assign200.txt", "dataset/assign300.txt",
         "dataset/assign400.txt", "dataset/assign500.txt", "dataset/assign600.txt",
         "dataset/assign700.txt", "dataset/assign800.txt"
@@ -76,10 +77,9 @@ def main():
         filename = os.path.basename(file)
         jobs_matrix = read_file(file)
         total_cost, assignments, solve_time = assignment_problem_solver(jobs_matrix)
-        solution_file = file.replace(".txt", "_solution.txt")
-        solution_file = os.path.join(output_dir, filename.replace(".txt", "_solution.txt"))
+        # solution_file = file.replace(".txt", "_solution.txt")
+        solution_file = os.path.join(output_dir, filename.replace(".txt", "_erotima1_solution.txt"))
         write_solution(solution_file, total_cost, assignments)
-        print(assignments)
         print(f"Solved {file}: Total Cost = {total_cost}, Time = {solve_time:.2f} seconds")
 
 if __name__ == "__main__":

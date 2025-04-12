@@ -17,11 +17,11 @@ def hungarian_algorithm(cost_matrix):
     left = range(n)
     #right = worker
     right = range(n, 2*n)
-    print(left,right)
+    # print(left,right)
 
     for i in left:
         for j in right:
-            print(i, j, cost_matrix[i][j - n])
+            # print(i, j, cost_matrix[i][j - n])
             G.add_edge(i, j, weight=cost_matrix[i][j - n])
     start = time.time()
     matching = nx.algorithms.bipartite.minimum_weight_full_matching(G, top_nodes=left, weight='weight')
