@@ -17,7 +17,6 @@ def assignment_with_group_constraint(jobs_matrix):
             x[i,j] = solver.IntVar(0, 1, f"x{i}_{j}")
     
     
-
     # ΝΕΟΙ Περιορισμοί ομάδων κάθε 5 εργασιών/εργαζομένων
     for start in range(0, n, 5):
         group_jobs = list(range(start, min(start + 5, n)))
