@@ -8,9 +8,8 @@
 - Python >= 3.8
 
 1. Δημιουργία και ενεργοποίηση περιβάλλοντος:
----------------------------------------------------------------------------
 Windows:
-> python -m venv opSearch
+> python -m venv opSearch <br>
 > opSearch\Scripts\activate
 
 Linux / macOS:
