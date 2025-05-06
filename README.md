@@ -5,7 +5,7 @@
 - Python >= 3.8
 - git clone https://github.com/tasosvittas/Operations-Research.git
 
-Εργασία 1<br>
+## Εργασία 1
 
 Δημιουργία και ενεργοποίηση περιβάλλοντος:
 Windows:
@@ -27,8 +27,8 @@ Linux / macOS:
 > python erotima2.py  
 > python erotima3.py
 
-Εργασία 2<br>
-<br>
+## Εργασία 2
+
 Δημιουργία και ενεργοποίηση περιβάλλοντος:
 > cd Operations-Research\Ergasia2_OS <br>
 > python -m venv erg2env <br>
