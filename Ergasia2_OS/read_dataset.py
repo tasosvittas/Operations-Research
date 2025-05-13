@@ -8,7 +8,7 @@ def load_data():
         truck_assignments = pd.read_csv(f'burrito_dataset/scenDE4BD4_round1_day{i}_demand_truck_data.csv')
         problem_data = pd.read_csv(f'burrito_dataset/scenDE4BD4_round1_day{i}_problem_data.csv')
 
-        print(demand_nodes,truck_assignments,problem_data)
+        # print(demand_nodes,truck_assignments,problem_data)
     return demand_nodes, truck_assignments, problem_data
 
 
