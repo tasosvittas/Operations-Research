@@ -14,7 +14,6 @@ def solve_with_gurobi():
     burrito_price = problem_data['burrito_price'][0]
     ingredient_cost = problem_data['ingredient_cost'][0]
     truck_cost = problem_data['truck_cost'][0]
-    max_truck_capacity = 200
 
     feasible_assignments = truck_assignments[truck_assignments['scaled_demand'] > 0]
     all_demands = demand_nodes['index'].unique()
@@ -48,15 +47,6 @@ def solve_with_gurobi():
     # 2. If truck is used in assignment, it is active
     for (d, t), var in assign.items():
         model.addConstr(var <= truck_active[t])
-
-    # 3. Capacity constraint per truck
-    for t in all_trucks:
-        assignments = feasible_assignments[feasible_assignments['truck_node_index'] == t]
-        if not assignments.empty:
-            model.addConstr(
-                quicksum(assign[(row['demand_node_index'], t)] * row['scaled_demand']
-                         for _, row in assignments.iterrows()) <= max_truck_capacity
-            )
 
     # Objective
     total_units = quicksum(assign[(d, t)] * feasible_assignments[

@@ -2,33 +2,85 @@ from ortools.sat.python import cp_model
 from read_dataset import load_data
 import pandas as pd
 
-def cpsat_solver():
-    demand_nodes, truck_assignments, problem_data = load_data()
+def cpsat_solver(day):
+    demand_nodes, truck_assignments, problem_data = load_data(day)
     model = cp_model.CpModel()
 
     #parametroi
     price = problem_data['burrito_price'][0]
     cost = problem_data['ingredient_cost'][0]
     truck_cost = problem_data['truck_cost'][0]
-    profit_per_unit = price - cost
 
     demands = demand_nodes['index'].unique()
     trucks = truck_assignments['truck_node_index'].unique()
     
-    feasible = trucks[trucks['scaled_demand'] > 0]
+    feasible_assignments = truck_assignments[truck_assignments['scaled_demand'] > 0]
 
+    #boolean gia na kserw an h kantina einai active h oxi 
     truck_active = {}
     for truck in trucks:
         truck_active[truck] = model.NewBoolVar(f"truck_{truck}")
+    
+    #boolean gia na kserw an h syndesi demand kai kantina einai ok
+    assignments = {} 
+    for _, row in feasible_assignments.iterrows():
+        demand = row['demand_node_index']
+        truck = row['truck_node_index']
+        var = model.NewBoolVar(f'assign_{demand}_{truck}')
+        assignments[(demand, truck)] = var
 
-    assignments = {
-        (row['demand_node_index'], row['truck_node_index']): 
-        model.NewBoolVar(f'assign_{row["demand_node_index"]}_to_{row["truck_node_index"]}')
-        for _, row in feasible.iterrows()
-    }
+    #kathe demand kalyptetai mono apo mia kantina
+    for demand in demands:
+        relevant_assignments = []
+        for (d, t), var in assignments.items():
+            if d == demand:
+                relevant_assignments.append(var)
 
-    print(assignments)
+        if relevant_assignments:
+            model.Add(sum(relevant_assignments) <= 1)
+
+
+    #elegxos gia kantina active or not
+    for (d, t), var in assignments.items():
+        model.Add(var <= truck_active[t])
+
+    total_units = sum(
+        row['scaled_demand'] * var
+        for (d, t), var in assignments.items()
+        for _, row in feasible_assignments[(feasible_assignments['demand_node_index'] == d) & 
+                                         (feasible_assignments['truck_node_index'] == t)].iterrows()
+    )
+
+    total_truck_costs = sum(truck_active[t] * truck_cost for t in trucks)
+    
+    # Maximize profit = (price - cost)*units - truck_costs
+    model.Maximize((price - cost) * total_units - total_truck_costs)
+    
+    solver = cp_model.CpSolver()
+    status = solver.Solve(model)
+
+    if status == cp_model.OPTIMAL:
+        print(f'\nDay {day}')
+        print(f'Profit: {solver.ObjectiveValue()}')
+        print('Active trucks:')
+        active_trucks = [t for t in trucks if solver.Value(truck_active[t])]
+        print(active_trucks)
+        
+        total_units = 0
+        for (d, t), var in assignments.items():
+            if solver.Value(var):
+                units = feasible_assignments[
+                    (feasible_assignments['demand_node_index'] == d) & 
+                    (feasible_assignments['truck_node_index'] == t)
+                ]['scaled_demand'].values[0]
+                total_units += units
+
+        print(f'Total units sold: {total_units}')
+        print(f'Revenue: €{total_units * price}')
+        print(f'Ingredient costs: €{total_units * cost}')
+        print(f'Truck costs: €{len(active_trucks) * truck_cost}')
 
 
 if __name__ == '__main__':
-    cpsat_solver()
+    for day in range(1, 6):  # Days 1 to 5
+        cpsat_solver(day)

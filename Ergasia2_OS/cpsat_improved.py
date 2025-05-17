@@ -44,7 +44,6 @@ def solve_burrito_assignment():
         model.NewBoolVar(f'assign_{row["demand_node_index"]}_to_{row["truck_node_index"]}')
         for _, row in feasible.iterrows()
     }
-    print("ssss",assignments)
     # Constraints
     # 1. Each demand served by at most one truck
     for demand in demands['index'].unique():
