@@ -2,7 +2,7 @@ from ortools.sat.python import cp_model
 from read_dataset import load_data
 import pandas as pd
 
-def cpsat_solver(day):
+def cpsat_solver(day, total_profit):
     demand_nodes, truck_assignments, problem_data = load_data(day)
     model = cp_model.CpModel()
 
@@ -61,11 +61,12 @@ def cpsat_solver(day):
 
     if status == cp_model.OPTIMAL:
         print(f'\nDay {day}')
-        print(f'Profit: {solver.ObjectiveValue()}')
-        print('Active trucks:')
+        profit = solver.ObjectiveValue()
+        print(f'Profit: €{profit:.2f}')
+
         active_trucks = [t for t in trucks if solver.Value(truck_active[t])]
-        print(active_trucks)
-        
+        print('Active trucks:', active_trucks)
+
         total_units = 0
         for (d, t), var in assignments.items():
             if solver.Value(var):
@@ -76,11 +77,21 @@ def cpsat_solver(day):
                 total_units += units
 
         print(f'Total units sold: {total_units}')
-        print(f'Revenue: €{total_units * price}')
-        print(f'Ingredient costs: €{total_units * cost}')
-        print(f'Truck costs: €{len(active_trucks) * truck_cost}')
+        print(f'Revenue: €{total_units * price:.2f}')
+        print(f'Ingredient costs: €{total_units * cost:.2f}')
+        print(f'Truck costs: €{len(active_trucks) * truck_cost:.2f}')
 
+        return profit
+    else:
+        print(f'\nDay {day}')
+        print('No optimal solution found.')
+        return 0  
 
 if __name__ == '__main__':
-    for day in range(1, 6):  # Days 1 to 5
-        cpsat_solver(day)
+    total_profit = 0
+    for day in range(1, 6): 
+        daily_profit = cpsat_solver(day, total_profit)
+        total_profit += daily_profit
+
+    print("\n==============================")
+    print(f"Total Score (5 days): €{total_profit:.2f}")
