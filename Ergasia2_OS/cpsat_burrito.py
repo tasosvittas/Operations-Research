@@ -39,7 +39,6 @@ def cpsat_solver(day):
 
         if relevant_assignments:
             model.Add(sum(relevant_assignments) <= 1)
-    print("Feasible Assignments: ",relevant_assignments)
 
     #elegxos gia kantina active or not
     for (d, t), var in assignments.items():
@@ -103,8 +102,14 @@ def cpsat_solver(day):
 
 if __name__ == '__main__':
     total_profit = 0
+    total_start = time.time() 
+
     for day in range(1, 6):
         total_profit += cpsat_solver(day)
 
+    total_end = time.time()
+    total_time = total_end - total_start
+
     print("\n==============================")
     print(f"Total Score (5 days): €{total_profit:.2f}")
+    print(f"Total Time (CP-SAT): {total_time:.4f} seconds")
