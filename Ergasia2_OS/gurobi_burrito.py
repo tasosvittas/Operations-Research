@@ -92,7 +92,7 @@ def solve_with_gurobi(day):
 
 if __name__ == "__main__":
     total_profit = 0
-    total_start = time.time()  # Χρονισμός συνολικός
+    total_start = time.time()  
 
     for day in range(1, 6):
         total_profit += solve_with_gurobi(day)
