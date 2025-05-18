@@ -31,5 +31,18 @@ Linux / macOS:
 
 Δημιουργία και ενεργοποίηση περιβάλλοντος:
 > cd Operations-Research\Ergasia2_OS <br>
+
+Windows:
 > python -m venv erg2env <br>
 > erg2env\Scripts\activate
+
+Linux / macOS:
+> python3 -m venv erg2env <br>
+> source erg2env/bin/activate
+
+Εγκατάσταση βιβλιοθηκών:
+> pip install -r requirements.txt
+
+Εκτέλεση των ερωτημάτων:
+> python cpsat_burrito.py  
+> python gurobi_burrito.py  
