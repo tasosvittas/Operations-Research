@@ -1,8 +1,9 @@
 from ortools.sat.python import cp_model
 from read_dataset import load_data
 import pandas as pd
+import time
 
-def cpsat_solver(day, total_profit):
+def cpsat_solver(day):
     demand_nodes, truck_assignments, problem_data = load_data(day)
     model = cp_model.CpModel()
 
@@ -20,7 +21,7 @@ def cpsat_solver(day, total_profit):
     truck_active = {}
     for truck in trucks:
         truck_active[truck] = model.NewBoolVar(f"truck_{truck}")
-    
+
     #boolean gia na kserw an h syndesi demand kai kantina einai ok
     assignments = {} 
     for _, row in feasible_assignments.iterrows():
@@ -38,31 +39,44 @@ def cpsat_solver(day, total_profit):
 
         if relevant_assignments:
             model.Add(sum(relevant_assignments) <= 1)
-
+    print("Feasible Assignments: ",relevant_assignments)
 
     #elegxos gia kantina active or not
     for (d, t), var in assignments.items():
         model.Add(var <= truck_active[t])
 
-    total_units = sum(
-        row['scaled_demand'] * var
-        for (d, t), var in assignments.items()
-        for _, row in feasible_assignments[(feasible_assignments['demand_node_index'] == d) & 
-                                         (feasible_assignments['truck_node_index'] == t)].iterrows()
-    )
+    # Ypologizoume posa burritos tha poulithoun synolika,
+    # vlepontas poia assignments ginontai kai posi zitisi exoun
+    total_units = 0 
+
+    for (demand, truck), var in assignments.items():
+        row = feasible_assignments[
+            (feasible_assignments['demand_node_index'] == demand) &
+            (feasible_assignments['truck_node_index'] == truck)
+        ]
+
+        if not row.empty:
+            scaled_demand = row.iloc[0]['scaled_demand']
+            total_units += scaled_demand * var
+
 
     total_truck_costs = sum(truck_active[t] * truck_cost for t in trucks)
     
-    # Maximize profit = (price - cost)*units - truck_costs
+    # profit = (price - cost)*units - truck_costs
     model.Maximize((price - cost) * total_units - total_truck_costs)
     
     solver = cp_model.CpSolver()
+    
+    start_time = time.time()
     status = solver.Solve(model)
+    end_time = time.time()
+    total_time = end_time - start_time 
 
     if status == cp_model.OPTIMAL:
         print(f'\nDay {day}')
         profit = solver.ObjectiveValue()
         print(f'Profit: €{profit:.2f}')
+        print(f"Total Time (CP-SAT): {total_time:.4f}")
 
         active_trucks = [t for t in trucks if solver.Value(truck_active[t])]
         print('Active trucks:', active_trucks)
@@ -89,9 +103,8 @@ def cpsat_solver(day, total_profit):
 
 if __name__ == '__main__':
     total_profit = 0
-    for day in range(1, 6): 
-        daily_profit = cpsat_solver(day, total_profit)
-        total_profit += daily_profit
+    for day in range(1, 6):
+        total_profit += cpsat_solver(day)
 
     print("\n==============================")
     print(f"Total Score (5 days): €{total_profit:.2f}")
